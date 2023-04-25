@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 
 class PtbrMoney extends TextInput
 {
-
     protected string|int|float|null $initialValue = '0,00';
 
     protected function setUp(): void
@@ -65,6 +64,7 @@ class PtbrMoney extends TextInput
     public function initialValue(null|string|int|float|Closure $value = '0,00'): static
     {
         $this->initialValue = $value;
+
         return $this;
     }
 }
