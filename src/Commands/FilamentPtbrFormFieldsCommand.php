@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Leandrocfe\FilamentPtbrFormFields\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FilamentPtbrFormFieldsCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'filament-ptbr-form-fields';
 
     public $description = 'My command';
 
