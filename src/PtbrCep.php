@@ -28,7 +28,7 @@ class PtbrCep extends TextInput
          * @param  array  $setFields
          */
         $viaCepRequest = function ($state, $livewire, $set, $component, $errorMessage, $setFields) {
-            $name = $livewire->form->getStatePath() ? $livewire->form->getStatePath() . '.' . $component->getName() : $component->getName();
+            $name = $livewire->form->getStatePath() ? $livewire->form->getStatePath().'.'.$component->getName() : $component->getName();
             $livewire->validateOnly($name);
 
             /**
