@@ -1,6 +1,6 @@
 # Brazilian pt-BR form fields.
 
-This package provides custom form fields for [Filament](https://filamentphp.com/) that are commonly used in Brazilian web applications, such as CPF/CNPJ validation, phone number formatting, money with currency symbol, and CEP integration with [ViaCep](https://viacep.com.br).
+This package provides custom form fields for [Filament](https://filamentphp.com/) (**>=v2.17.28**) that are commonly used in Brazilian web applications, such as CPF/CNPJ validation, phone number formatting, money with currency symbol, and CEP integration with [ViaCep](https://viacep.com.br).
 
 This package uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields.
 
@@ -79,6 +79,7 @@ PtbrCpfCnpj::make('cnpj')
 To create a dynamic input that formats phone numbers with DDD, use:
 
 ```php
+use Leandrocfe\FilamentPtbrFormFields\PtbrPhone;
 PtbrPhone::make('phone_number')
 ```
 
@@ -99,6 +100,7 @@ PtbrPhone::make('phone_number')
 To create a money input with the Brazilian currency symbol as the prefix, use:
 
 ```php
+use Leandrocfe\FilamentPtbrFormFields\PtbrMoney;
 PtbrMoney::make('price')
 ```
 
@@ -128,6 +130,8 @@ PtbrMoney::make('price')
 To integrate with the ViaCep API for CEP validation and address autofill, use:
 
 ```php
+use Leandrocfe\FilamentPtbrFormFields\PtbrCep;
+use Filament\Forms\Components\TextInput;
 PtbrCep::make('postal_code')
     ->viaCep(
         mode: 'suffix', // Determines whether the action should be appended to (suffix) or prepended to (prefix) the cep field, or not included at all (none).
