@@ -7,10 +7,6 @@ use Spatie\LaravelPackageTools\Package;
 
 class FilamentPtbrFormFieldsServiceProvider extends FilamentServiceProvider
 {
-    protected array $beforeCoreScripts = [
-        'filament-apex-charts-scripts' => __DIR__.'/../dist/mask.min.js',
-    ];
-
     public function configurePackage(Package $package): void
     {
         /*
