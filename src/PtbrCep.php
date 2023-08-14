@@ -3,10 +3,12 @@
 namespace Leandrocfe\FilamentPtbrFormFields;
 
 use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\{Component, TextInput};
+use Filament\Forms\Set;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
+use Livewire\Component as Livewire;
 
 class PtbrCep extends TextInput
 {
@@ -19,22 +21,11 @@ class PtbrCep extends TextInput
      */
     public function viaCep($mode = 'suffix', $errorMessage = 'CEP inválido.', $setFields = []): static
     {
-        /**
-         * @param  string  $state
-         * @param  Livewire  $livewire
-         * @param  Closure  $set
-         * @param  TextInput  $component
-         * @param  string  $errorMessage
-         * @param  array  $setFields
-         */
-        $viaCepRequest = function ($state, $livewire, $set, $component, $errorMessage, $setFields) {
-            $name = $livewire->form->getStatePath() ? $livewire->form->getStatePath().'.'.$component->getName() : $component->getName();
-            $livewire->validateOnly($name);
+        $viaCepRequest = function ($state, Livewire $livewire, Set $set, Component $component, string $errorMessage, array $setFields) {
 
-            /**
-             * viacep api
-             */
-            $request = Http::get("viacep.com.br/ws/{$state}/json/")->json();
+            $livewire->validateOnly($component->getKey());
+
+            $request = Http::get("viacep.com.br/ws/$state/json/")->json();
 
             foreach ($setFields as $key => $value) {
                 $set($key, $request[$value] ?? null);
@@ -42,7 +33,7 @@ class PtbrCep extends TextInput
 
             if (Arr::has($request, 'erro')) {
                 throw ValidationException::withMessages([
-                    $name => $errorMessage,
+                    $component->getKey() => $errorMessage,
                 ]);
             }
         };
