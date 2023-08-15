@@ -45,7 +45,7 @@ class PtbrMoney extends TextInput
     {
         if ($condition) {
             $this->dehydrateStateUsing(
-                fn ($state): null|float => $state ?
+                fn ($state): ?float => $state ?
                     floatval(
                         Str::of($state)
                             ->replace('.', '')
