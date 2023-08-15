@@ -136,7 +136,6 @@ PtbrCep::make('postal_code')
     ->viaCep(
         mode: 'suffix', // Determines whether the action should be appended to (suffix) or prepended to (prefix) the cep field, or not included at all (none).
         errorMessage: 'CEP inválido.', // Error message to display if the CEP is invalid.
-        eventFocus: 'cep', // Add focus in another element after cep search
 
         /**
          * Other form fields that can be filled by ViaCep.
@@ -154,10 +153,7 @@ PtbrCep::make('postal_code')
     ),
 
 TextInput::make('street'),
-TextInput::make('number')
-    ->extraAlpineAttributes([
-        'x-on:cep.window' => "\$el.focus()", // listen to the focus event and add to the element
-    ]),,
+TextInput::make('number'),
 TextInput::make('complement'),
 TextInput::make('district'),
 TextInput::make('city'),

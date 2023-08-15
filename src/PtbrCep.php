@@ -13,9 +13,9 @@ use Livewire\Component as Livewire;
 
 class PtbrCep extends TextInput
 {
-    public function viaCep(string $mode = 'suffix', string $errorMessage = 'CEP inválido.', string $eventFocus = '', array $setFields = []): static
+    public function viaCep(string $mode = 'suffix', string $errorMessage = 'CEP inválido.', array $setFields = []): static
     {
-        $viaCepRequest = function ($state, $livewire, $set, $component, $errorMessage, $eventFocus, array $setFields) {
+        $viaCepRequest = function ($state, $livewire, $set, $component, $errorMessage, array $setFields) {
 
             $livewire->validateOnly($component->getKey());
 
@@ -25,42 +25,37 @@ class PtbrCep extends TextInput
                 $set($key, $request[$value] ?? null);
             }
 
-            if (Arr::has($request, 'erro')) {
+            if (blank($request) || Arr::has($request, 'erro')) {
                 throw ValidationException::withMessages([
                     $component->getKey() => $errorMessage,
                 ]);
             }
-
-            if ($eventFocus) {
-                $livewire->dispatch($eventFocus);
-            }
-
         };
 
         $this
             ->minLength(9)
             ->mask('99999-999')
-            ->afterStateUpdated(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $eventFocus, $viaCepRequest) {
-                $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $eventFocus, $setFields);
+            ->afterStateUpdated(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
+                $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
             })
-            ->suffixAction(function () use ($mode, $errorMessage, $eventFocus, $setFields, $viaCepRequest) {
+            ->suffixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest) {
                 if ($mode === 'suffix') {
                     return Action::make('search-action')
                         ->label('Buscar CEP')
                         ->icon('heroicon-o-magnifying-glass')
-                        ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $eventFocus, $setFields, $viaCepRequest) {
-                            $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $eventFocus, $setFields);
+                        ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
+                            $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
                         })
                         ->cancelParentActions();
                 }
             })
-            ->prefixAction(function () use ($mode, $errorMessage, $eventFocus, $setFields, $viaCepRequest) {
+            ->prefixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest) {
                 if ($mode === 'prefix') {
                     return Action::make('search-action')
                         ->label('Buscar CEP')
                         ->icon('heroicon-o-magnifying-glass')
-                        ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $eventFocus, $setFields, $viaCepRequest) {
-                            $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $eventFocus, $setFields);
+                        ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
+                            $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
                         })
                         ->cancelParentActions();
                 }
