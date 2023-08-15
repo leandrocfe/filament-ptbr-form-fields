@@ -6,18 +6,16 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\RawJs;
 
-/**
- * @deprecated Use `Document` instead.
- */
-class PtbrCpfCnpj extends TextInput
+class Document extends TextInput
 {
-    protected function setUp(): void
-    {
-        $this->dynamic();
-    }
+    public bool $validation = true;
 
     public function dynamic(bool $condition = true): static
     {
+        if (self::getValidation()) {
+            $this->rule('cpf_ou_cnpj');
+        }
+
         if ($condition) {
             $this->mask(RawJs::make(<<<'JS'
                 $input.length > 14 ? '99.999.999/9999-99' : '999.999.999-99'
@@ -32,6 +30,10 @@ class PtbrCpfCnpj extends TextInput
         $this->dynamic(false)
             ->mask($format);
 
+        if (self::getValidation()) {
+            $this->rule('cpf');
+        }
+
         return $this;
     }
 
@@ -40,6 +42,22 @@ class PtbrCpfCnpj extends TextInput
         $this->dynamic(false)
             ->mask($format);
 
+        if (self::getValidation()) {
+            $this->rule('cnpj');
+        }
+
         return $this;
+    }
+
+    public function validation(bool|Closure $condition = true): static
+    {
+        $this->validation = $condition;
+
+        return $this;
+    }
+
+    public function getValidation(): bool
+    {
+        return $this->validation;
     }
 }

@@ -6,6 +6,9 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\RawJs;
 
+/**
+ * @deprecated Use `PhoneNumber` instead.
+ */
 class PtbrPhone extends TextInput
 {
     protected function setUp(): void

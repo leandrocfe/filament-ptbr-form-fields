@@ -6,10 +6,7 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\RawJs;
 
-/**
- * @deprecated Use `Document` instead.
- */
-class PtbrCpfCnpj extends TextInput
+class PhoneNumber extends TextInput
 {
     protected function setUp(): void
     {
@@ -20,24 +17,17 @@ class PtbrCpfCnpj extends TextInput
     {
         if ($condition) {
             $this->mask(RawJs::make(<<<'JS'
-                $input.length > 14 ? '99.999.999/9999-99' : '999.999.999-99'
-            JS))->minLength(14);
+                $input.length >= 14 ? '(99)99999-9999' : '(99)9999-9999'
+            JS));
         }
 
         return $this;
     }
 
-    public function cpf(string|Closure $format = '999.999.999-99'): static
+    public function format(string|Closure $format = '(99)99999-9999'): static
     {
         $this->dynamic(false)
-            ->mask($format);
-
-        return $this;
-    }
-
-    public function cnpj(string|Closure $format = '99.999.999/9999-99'): static
-    {
-        $this->dynamic(false)
+            ->minLength(0)
             ->mask($format);
 
         return $this;
