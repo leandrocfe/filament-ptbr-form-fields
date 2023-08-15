@@ -11,7 +11,7 @@ This package uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLeg
 You can install the package via Composer:
 
 ```bash
-composer require leandrocfe/filament-ptbr-form-fields
+composer require leandrocfe/filament-ptbr-form-fields:"^2.0"
 ```
 
 ## Usage
