@@ -24,6 +24,7 @@ To create a dynamic input that accepts either CPF or CNPJ, use:
 
 ```php
 use Leandrocfe\FilamentPtbrFormFields\Document;
+//CPF or CNPJ
 Document::make('cpf_or_cnpj')
     ->dynamic()
 ```
@@ -51,11 +52,11 @@ Document::make('cpf')
 
 ```php
 Document::make('cnpj')
-    ->cnpj('99999999/9999-57')
+    ->cnpj('99999999/9999-99')
 ```
 
 ### Validation
-`Document` uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields by default (`cpf_ou_cnpj`, `cpf`, `cnpj`)
+`Document` uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields by default - `cpf_ou_cnpj` | `cpf` | `cnpj`
 
 You can disable validation using the `validation(false)` method:
 
