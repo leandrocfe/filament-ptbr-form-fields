@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component as Livewire;
 
-/**
- * @deprecated Use `Cep` instead.
- */
-class PtbrCep extends TextInput
+class Cep extends TextInput
 {
     public function viaCep(string $mode = 'suffix', string $errorMessage = 'CEP inválido.', array $setFields = []): static
     {

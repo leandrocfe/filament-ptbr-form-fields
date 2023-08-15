@@ -4,7 +4,11 @@ namespace Leandrocfe\FilamentPtbrFormFields;
 
 use Closure;
 use Filament\Forms\Components\TextInput;
+use Filament\Support\RawJs;
 
+/**
+ * @deprecated Use `PhoneNumber` instead.
+ */
 class PtbrPhone extends TextInput
 {
     protected function setUp(): void
@@ -15,9 +19,9 @@ class PtbrPhone extends TextInput
     public function dynamic(bool $condition = true): static
     {
         if ($condition) {
-            $this->extraAlpineAttributes([
-                'x-mask:dynamic' => '$input.length >=14 ? \'(99)99999-9999\' : \'(99)9999-9999\'',
-            ])->minLength(13);
+            $this->mask(RawJs::make(<<<'JS'
+                $input.length > 14 ? '(99)99999-9999' : '(99)9999-9999'
+            JS));
         }
 
         return $this;
@@ -27,9 +31,7 @@ class PtbrPhone extends TextInput
     {
         $this->dynamic(false)
             ->minLength(0)
-            ->extraAlpineAttributes([
-                'x-mask' => $format,
-            ]);
+            ->mask($format);
 
         return $this;
     }

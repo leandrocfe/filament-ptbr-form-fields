@@ -6,10 +6,7 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Str;
 
-/**
- * @deprecated Use `Money` instead.
- */
-class PtbrMoney extends TextInput
+class Money extends TextInput
 {
     protected string|int|float|null $initialValue = '0,00';
 
@@ -46,6 +43,7 @@ class PtbrMoney extends TextInput
 
     public function dehydrateMask(bool|Closure $condition = true): static
     {
+
         if ($condition) {
             $this->dehydrateStateUsing(
                 fn ($state): ?float => $state ?
@@ -54,7 +52,7 @@ class PtbrMoney extends TextInput
                             ->replace('.', '')
                             ->replace(',', '.')
                             ->toString()
-                    ) :
+                    ) * 10 :
                     null
             );
         } else {
