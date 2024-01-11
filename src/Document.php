@@ -12,11 +12,12 @@ class Document extends TextInput
 
     public function dynamic(bool $condition = true): static
     {
-        if (self::getValidation()) {
-            $this->rule('cpf_ou_cnpj');
-        }
-
         if ($condition) {
+
+            if (self::getValidation()) {
+                $this->rule('cpf_ou_cnpj');
+            }
+            
             $this->mask(RawJs::make(<<<'JS'
                 $input.length > 14 ? '99.999.999/9999-99' : '999.999.999-99'
             JS))->minLength(14);
