@@ -19,7 +19,7 @@ class Cep extends TextInput
 
             $livewire->validateOnly($component->getKey());
 
-            $request = Http::get("viacep.com.br/ws/$state/json/")->json();
+            $request = Http::get(config('filament-ptbr-form-fields.viacep_url').$state.'/json/')->json();
 
             foreach ($setFields as $key => $value) {
                 $set($key, $request[$value] ?? null);
