@@ -4,6 +4,7 @@ namespace Leandrocfe\FilamentPtbrFormFields\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Leandrocfe\FilamentPtbrFormFields\FilamentPtbrFormFieldsServiceProvider;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -21,6 +22,7 @@ class TestCase extends Orchestra
     {
         return [
             FilamentPtbrFormFieldsServiceProvider::class,
+            LivewireServiceProvider::class,
         ];
     }
 
