@@ -93,7 +93,7 @@ class Money extends TextInput
         $sanitized = $this->sanitizeState($state);
         $money = money(amount: $sanitized, currency: $this->getCurrency());
 
-        if($this->getDehydrateMask()) {
+        if ($this->getDehydrateMask()) {
             return $money->formatted();
         }
 
@@ -103,6 +103,7 @@ class Money extends TextInput
     public function dehydrateMask(bool $condition = true): static
     {
         $this->dehydrateMask = $condition;
+
         return $this;
     }
 

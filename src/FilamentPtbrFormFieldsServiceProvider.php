@@ -3,9 +3,10 @@
 namespace Leandrocfe\FilamentPtbrFormFields;
 
 use Filament\FilamentServiceProvider;
+use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Spatie\LaravelPackageTools\Package;
-use Filament\Support\Assets\Js;
+
 class FilamentPtbrFormFieldsServiceProvider extends FilamentServiceProvider
 {
     public function packageBooted(): void
@@ -13,7 +14,7 @@ class FilamentPtbrFormFieldsServiceProvider extends FilamentServiceProvider
         parent::packageBooted();
 
         FilamentAsset::register([
-            Js::make('money-script', __DIR__ . '/../resources/js/money.js'),
+            Js::make('money-script', __DIR__.'/../resources/js/money.js'),
         ]);
     }
 
