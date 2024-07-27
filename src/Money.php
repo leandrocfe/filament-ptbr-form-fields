@@ -14,9 +14,9 @@ class Money extends TextInput
 
     protected ?Currency $currency = null;
 
-    protected bool|Closure $intFormat = false;
-
     protected bool|Closure $dehydrateMask = false;
+
+    protected bool|Closure $intFormat = false;
 
     protected function setUp(): void
     {
@@ -29,6 +29,13 @@ class Money extends TextInput
             ->dehydrateStateUsing(fn ($state) => $this->dehydrateCurrency($state));
     }
 
+    public function initialValue(null|string|int|float|Closure $value = '0,00'): static
+    {
+        $this->initialValue = $value;
+
+        return $this;
+    }
+
     public function currency(string|null|Closure $currency = BRL::class): static
     {
         $this->currency = new ($currency);
@@ -39,44 +46,6 @@ class Money extends TextInput
         }
 
         return $this;
-    }
-
-    public function intFormat(bool|Closure $intFormat = true): static
-    {
-        $this->intFormat = $intFormat;
-
-        return $this;
-    }
-
-    public function getIntFormat(): bool
-    {
-        return $this->intFormat;
-    }
-
-    protected function getOnKeyPress(): array
-    {
-        return [
-            'x-on:keypress' => 'function() {
-                var charCode = event.keyCode || event.which;
-                if (charCode < 48 || charCode > 57) {
-                    event.preventDefault();
-                    return false;
-                }
-                return true;
-            }',
-        ];
-    }
-
-    protected function getOnKeyUp(): array
-    {
-        $currency = new ($this->getCurrency());
-        $numberFormatter = $currency->locale;
-
-        return [
-            'x-on:keyup' => 'function() {
-                $el.value = Currency.masking($el.value, {locales:\''.$numberFormatter.'\'});
-            }',
-        ];
     }
 
     protected function hydrateCurrency($state): string
@@ -107,21 +76,11 @@ class Money extends TextInput
         return $this;
     }
 
-    public function getDehydrateMask(): bool
+    public function intFormat(bool|Closure $intFormat = true): static
     {
-        return $this->dehydrateMask;
-    }
-
-    public function initialValue(null|string|int|float|Closure $value = '0,00'): static
-    {
-        $this->initialValue = $value;
+        $this->intFormat = $intFormat;
 
         return $this;
-    }
-
-    public function getCurrency(): ?Currency
-    {
-        return $this->currency;
     }
 
     protected function sanitizeState(?string $state): ?int
@@ -132,5 +91,46 @@ class Money extends TextInput
             ->toInteger();
 
         return $state ?? null;
+    }
+
+    protected function getOnKeyPress(): array
+    {
+        return [
+            'x-on:keypress' => 'function() {
+                var charCode = event.keyCode || event.which;
+                if (charCode < 48 || charCode > 57) {
+                    event.preventDefault();
+                    return false;
+                }
+                return true;
+            }',
+        ];
+    }
+
+    protected function getOnKeyUp(): array
+    {
+        $currency = new ($this->getCurrency());
+        $numberFormatter = $currency->locale;
+
+        return [
+            'x-on:keyup' => 'function() {
+                $el.value = Currency.masking($el.value, {locales:\''.$numberFormatter.'\'});
+            }',
+        ];
+    }
+
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function getDehydrateMask(): bool
+    {
+        return $this->dehydrateMask;
+    }
+
+    public function getIntFormat(): bool
+    {
+        return $this->intFormat;
     }
 }
