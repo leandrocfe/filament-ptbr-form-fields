@@ -13,7 +13,7 @@ use Livewire\Component as Livewire;
 
 class Cep extends TextInput
 {
-    public function viaCep(string $mode = 'suffix', string $errorMessage = 'CEP inválido.', array $setFields = []): static
+    public function viaCep(string $mode = 'suffix', string $errorMessage = 'CEP inválido.', array $setFields = [], $useCancelParentActions=true): static
     {
         $viaCepRequest = function ($state, $livewire, $set, $component, $errorMessage, array $setFields) {
 
@@ -38,26 +38,28 @@ class Cep extends TextInput
             ->afterStateUpdated(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
                 $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
             })
-            ->suffixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest) {
+            ->suffixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest, $useCancelParentActions) {
                 if ($mode === 'suffix') {
-                    return Action::make('search-action')
+                    $action = Action::make('search-action')
                         ->label('Buscar CEP')
                         ->icon('heroicon-o-magnifying-glass')
                         ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
                             $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
-                        })
-                        ->cancelParentActions();
+                        });
+                    if ($useCancelParentActions) $action->cancelParentActions();
+                    return $action;
                 }
             })
-            ->prefixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest) {
+            ->prefixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest, $useCancelParentActions) {
                 if ($mode === 'prefix') {
-                    return Action::make('search-action')
+                    $action = Action::make('search-action')
                         ->label('Buscar CEP')
                         ->icon('heroicon-o-magnifying-glass')
                         ->action(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
                             $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
-                        })
-                        ->cancelParentActions();
+                        });
+                    if ($useCancelParentActions) $action->cancelParentActions();
+                    return $action;
                 }
             });
 
