@@ -19,25 +19,29 @@ class PtbrMoney extends TextInput
             ->prefix('R$')
             ->maxLength(13)
             ->extraAlpineAttributes([
+                'x-data' => '{ formatMoney(value) {
+                    value = value.replace(/\D/g, "");
+                    value = (value / 100).toFixed(2) + "";
+                    value = value.replace(".", ",");
+                    value = value.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+                    value = value.replace(/(\d)(\d{3}),/g, "$1.$2,");
+                    return value;
+                }}',
 
-                'x-on:keypress' => 'function() {
-                        var charCode = event.keyCode || event.which;
-                        if (charCode < 48 || charCode > 57) {
-                            event.preventDefault();
-                            return false;
-                        }
-                        return true;                            
-                    }',
+                'x-on:keypress' => 'function(event) {
+                    var charCode = event.keyCode || event.which;
+                    if (charCode < 48 || charCode > 57) {
+                        event.preventDefault();
+                    }
+                }',
 
                 'x-on:keyup' => 'function() {
-                        var money = $el.value.replace(/\D/g, "");
-                        money = (money / 100).toFixed(2) + "";
-                        money = money.replace(".", ",");
-                        money = money.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
-                        money = money.replace(/(\d)(\d{3}),/g, "$1.$2,");
-                        
-                        $el.value = money;
-                    }',
+                    $el.value = this.formatMoney($el.value);
+                }',
+
+                'x-init' => 'function() {
+                    $el.value = this.formatMoney($el.value);
+                }'
             ])
             ->dehydrateMask()
             ->default(0.00)

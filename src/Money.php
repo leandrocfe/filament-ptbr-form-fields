@@ -17,22 +17,28 @@ class Money extends TextInput
             ->prefix('R$')
             ->maxLength(13)
             ->extraAlpineAttributes([
-
+                'x-data' => '{ formatMoney(value) {
+                    value = value.replace(/\D/g, "");
+                    value = (parseFloat(value) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+                    return value === "NaN" ? "0,00" : value;
+                }}',
+                                    
                 'x-on:keypress' => 'function() {
-                        var charCode = event.keyCode || event.which;
-                        if (charCode < 48 || charCode > 57) {
-                            event.preventDefault();
-                            return false;
-                        }
-                        return true;                            
-                    }',
+                    var charCode = event.keyCode || event.which;
+                    if (charCode < 48 || charCode > 57) {
+                        event.preventDefault();
+                        return false;
+                    }
+                    return true;                            
+                }',
 
                 'x-on:keyup' => 'function() {
-                        var money = $el.value;
-                        money = money.replace(/\D/g, \'\');
-                        money = (parseFloat(money) / 100).toLocaleString(\'pt-BR\', { minimumFractionDigits: 2 });
-                        $el.value = money === \'NaN\' ? \'0,00\' : money;
-                    }',
+                    $el.value = this.formatMoney($el.value);
+                }',
+
+                'x-init' => 'function () {
+                    $el.value = this.formatMoney($el.value);
+                }'     
             ])
             ->dehydrateMask()
             ->default(0.00)
