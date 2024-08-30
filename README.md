@@ -4,7 +4,7 @@ This package provides custom form fields for [Filament](https://filamentphp.com/
 
 This package uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields.
 
-![image demo](https://raw.githubusercontent.com/leandrocfe/filament-ptbr-form-fields/develop/screenshots/v3-example.png)
+![image demo](https://raw.githubusercontent.com/leandrocfe/filament-ptbr-form-fields/develop/screenshots/v3x-example.png)
 
 ## Installation
 
@@ -81,46 +81,151 @@ use Leandrocfe\FilamentPtbrFormFields\PhoneNumber;
 PhoneNumber::make('phone_number')
 ```
 
-If you want to use a custom phone number format, use the format() method with a string argument representing the desired format:
+If you want to use a custom phone number format, use the `mask() method with a string argument representing the desired format:
 
 ```php
 PhoneNumber::make('phone_number')
-->format('99999-9999')
+    ->mask('(99) 99999-9999')
 ```
 
 ```php
 PhoneNumber::make('phone_number')
-->format('(+99)(99)99999-9999')
+    ->mask('+99 (99) 99999-9999')
 ```
 
 ### Money
 
-To create a money input with the Brazilian currency symbol as the prefix, use:
+To create a money input field, use the following syntax:
 
 ```php
 use Leandrocfe\FilamentPtbrFormFields\Money;
 Money::make('price')
+    ->default('100,00')
+
+#output: 100.00
 ```
 
-If you want to remove the prefix, use the prefix() method with a null argument:
+This is suitable for use with `decimal` or `float` data types.
+
+#### Using Integer Values
+
+If you prefer to work with integer values, you can format the money input using the `intFormat()` method:
 
 ```php
+use Leandrocfe\FilamentPtbrFormFields\Money;
 Money::make('price')
-->prefix(null)
+    ->default(10000)
+    ->intFormat()
+
+#output: 10000
+```
+#### Getting the Raw State
+
+To retrieve the raw state of the field, you can use the `dehydratedMask() method:
+
+```php
+use Leandrocfe\FilamentPtbrFormFields\Money;
+Money::make('price')
+    ->default('100,00')
+    ->dehydrateMask()
+
+#output: 100,00
 ```
 
-By default, the mask is removed from the input when it is submitted. If you want to keep the mask, use the dehydrateMask() method with a false argument:
-
+If you need to remove the prefix from the money input, simply pass null to the `prefix()` method:
 ```php
 Money::make('price')
-->dehydrateMask(false)
+    ->prefix(null)
+```
+#### Currency Formatting
+
+This package leverages the `archtechx/money` package under the hood. By default, it uses the `BRL` (Brazilian Real) format for currency values.
+
+If you want to switch to the `USD` (United States Dollar) format, you can do so with the following code:
+```php
+use Leandrocfe\FilamentPtbrFormFields\Currencies\USD;
+
+Money::make('price')
+    ->currency(USD::class)
+    ->prefix('$')
 ```
 
-The initial value of the input is '0,00'. If you want to change the initial value, use the initialValue() method with a string argument:
+You can also define custom currencies to suit your specific needs:
+
 
 ```php
+
+/*
+ * app/Currencies/EUR.php
+ */
+ 
+declare(strict_types=1);
+
+namespace App\Currencies;
+
+use ArchTech\Money\Currency;
+
+class EUR extends Currency
+{
+    /*
+     * Code of the currency.
+     */
+    public string $code = 'EUR';
+
+    /*
+     * Name of the currency.
+     */
+    public string $name = 'Euro';
+
+    /*
+     * Rate of this currency relative to the default currency.
+     */
+    public float $rate = 1.0;
+
+    /*
+     * Number of decimals used in money calculations.
+     */
+    public int $mathDecimals = 2;
+
+    /*
+     * Number of decimals used in the formatted value
+     */
+    public int $displayDecimals = 2;
+
+    /*
+     * How many decimals of the currency's values should get rounded
+     */
+    public int $rounding = 2;
+
+    /*
+     * Prefix placed at the beginning of the formatted value.
+    */
+    public string $prefix = '€';
+
+    /*
+     * The language code.
+     */
+    public string $locale = 'pt';
+
+    /*
+     * The character used to separate the decimal values.
+     */
+    public string $decimalSeparator = '.';
+
+    /*
+     * The character used to separate groups of thousands
+     */
+    public string $thousandsSeparator = ',';
+}
+
+```
+
+```php
+use App\Currencies\EUR;
+
 Money::make('price')
-->initialValue(null)
+->currency(EUR::class)
+->prefix('€')
 ```
 
 ### Address

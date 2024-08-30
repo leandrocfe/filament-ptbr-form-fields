@@ -2,52 +2,31 @@
 
 namespace Leandrocfe\FilamentPtbrFormFields;
 
+use ArchTech\Money\Currency;
 use Closure;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Str;
-use Illuminate\Support\Stringable;
+use Leandrocfe\FilamentPtbrFormFields\Currencies\BRL;
 
 class Money extends TextInput
 {
     protected string|int|float|null $initialValue = '0,00';
 
+    protected ?Currency $currency = null;
+
+    protected bool|Closure $dehydrateMask = false;
+
+    protected bool|Closure $intFormat = false;
+
     protected function setUp(): void
     {
         $this
+            ->currency()
             ->prefix('R$')
-            ->maxLength(13)
-            ->extraAlpineAttributes([
-
-                'x-on:keypress' => 'function() {
-                        var charCode = event.keyCode || event.which;
-                        if (charCode < 48 || charCode > 57) {
-                            event.preventDefault();
-                            return false;
-                        }
-                        return true;                            
-                    }',
-
-                'x-on:keyup' => 'function() {
-                        var money = $el.value;
-                        money = money.replace(/\D/g, \'\');
-                        money = (parseFloat(money) / 100).toLocaleString(\'pt-BR\', { minimumFractionDigits: 2 });
-                        $el.value = money === \'NaN\' ? \'0,00\' : money;
-                    }',
-            ])
-            ->dehydrateMask()
-            ->default(0.00)
-            ->formatStateUsing(fn ($state) => $state ? number_format(floatval($state), 2, ',', '.') : $this->initialValue);
-    }
-
-    public function dehydrateMask(bool|Closure $condition = true): static
-    {
-        if ($condition) {
-            $this->dehydrateStateUsing(fn (?string $state): ?float => $this->convertToFloat($state));
-        } else {
-            $this->dehydrateStateUsing(fn (?string $state): ?string => $this->convertToNumberFormat($state));
-        }
-
-        return $this;
+            ->extraAlpineAttributes(fn () => $this->getOnKeyPress())
+            ->extraAlpineAttributes(fn () => $this->getOnKeyUp())
+            ->formatStateUsing(fn ($state) => $this->hydrateCurrency($state))
+            ->dehydrateStateUsing(fn ($state) => $this->dehydrateCurrency($state));
     }
 
     public function initialValue(null|string|int|float|Closure $value = '0,00'): static
@@ -57,39 +36,101 @@ class Money extends TextInput
         return $this;
     }
 
-    private function sanitizeState(?string $state): ?Stringable
+    public function currency(string|null|Closure $currency = BRL::class): static
+    {
+        $this->currency = new ($currency);
+        currencies()->add($currency);
+
+        if ($currency !== 'BRL') {
+            $this->prefix(null);
+        }
+
+        return $this;
+    }
+
+    protected function hydrateCurrency($state): string
+    {
+        $sanitized = $this->sanitizeState($state);
+
+        $money = money(amount: $sanitized, currency: $this->getCurrency());
+
+        return $money->formatted(prefix: '');
+    }
+
+    protected function dehydrateCurrency($state): int|float|string
+    {
+        $sanitized = $this->sanitizeState($state);
+        $money = money(amount: $sanitized, currency: $this->getCurrency());
+
+        if ($this->getDehydrateMask()) {
+            return $money->formatted();
+        }
+
+        return $this->getIntFormat() ? $money->value() : $money->decimal();
+    }
+
+    public function dehydrateMask(bool $condition = true): static
+    {
+        $this->dehydrateMask = $condition;
+
+        return $this;
+    }
+
+    public function intFormat(bool|Closure $intFormat = true): static
+    {
+        $this->intFormat = $intFormat;
+
+        return $this;
+    }
+
+    protected function sanitizeState(?string $state): ?int
     {
         $state = Str::of($state)
             ->replace('.', '')
-            ->replace(',', '');
+            ->replace(',', '')
+            ->toInteger();
 
         return $state ?? null;
     }
 
-    private function convertToFloat(Stringable|string|null $state): float
+    protected function getOnKeyPress(): array
     {
-        $state = $this->sanitizeState($state);
-
-        if (! $state) {
-            return 0;
-        }
-
-        if ($state->length() > 2) {
-            $state = $state
-                ->substr(0, $state->length() - 2)
-                ->append('.')
-                ->append($state->substr($state->length() - 2, 2));
-        } else {
-            $state = $state->prepend('0.');
-        }
-
-        return floatval($state->toString()) ?? 0;
+        return [
+            'x-on:keypress' => 'function() {
+                var charCode = event.keyCode || event.which;
+                if (charCode < 48 || charCode > 57) {
+                    event.preventDefault();
+                    return false;
+                }
+                return true;
+            }',
+        ];
     }
 
-    private function convertToNumberFormat(string $state): string
+    protected function getOnKeyUp(): array
     {
-        $state = $this->convertToFloat($state);
+        $currency = new ($this->getCurrency());
+        $numberFormatter = $currency->locale;
 
-        return number_format($state, 2, ',', '.') ?? 0;
+        return [
+            'x-on:keyup' => 'function() {
+                $el.value = Currency.masking($el.value, {locales:\''.$numberFormatter.'\'});
+            }',
+        ];
+    }
+
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function getDehydrateMask(): bool
+    {
+        return $this->dehydrateMask;
+    }
+
+    public function getIntFormat(): bool
+    {
+        return $this->intFormat;
     }
 }
