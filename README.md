@@ -4,7 +4,7 @@ This package provides custom form fields for [Filament](https://filamentphp.com/
 
 This package uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields.
 
-![image demo](https://raw.githubusercontent.com/leandrocfe/filament-ptbr-form-fields/develop/screenshots/v3-example.png)
+![image demo](https://raw.githubusercontent.com/leandrocfe/filament-ptbr-form-fields/develop/screenshots/v3x-example.png)
 
 ## Installation
 
@@ -114,8 +114,8 @@ If you prefer to work with integer values, you can format the money input using 
 ```php
 use Leandrocfe\FilamentPtbrFormFields\Money;
 Money::make('price')
-->default(10000)
-->intFormat()
+    ->default(10000)
+    ->intFormat()
 
 #output: 10000
 ```
@@ -126,8 +126,8 @@ To retrieve the raw state of the field, you can use the `dehydratedMask() method
 ```php
 use Leandrocfe\FilamentPtbrFormFields\Money;
 Money::make('price')
-->default('100,00')
-->dehydrateMask()
+    ->default('100,00')
+    ->dehydrateMask()
 
 #output: 100,00
 ```
@@ -135,7 +135,7 @@ Money::make('price')
 If you need to remove the prefix from the money input, simply pass null to the `prefix()` method:
 ```php
 Money::make('price')
-->prefix(null)
+    ->prefix(null)
 ```
 #### Currency Formatting
 
@@ -146,13 +146,19 @@ If you want to switch to the `USD` (United States Dollar) format, you can do so 
 use Leandrocfe\FilamentPtbrFormFields\Currencies\USD;
 
 Money::make('price')
-->currency(USD::class)
-->prefix('$')
+    ->currency(USD::class)
+    ->prefix('$')
 ```
 
 You can also define custom currencies to suit your specific needs:
 
+
 ```php
+
+/*
+ * app/Currencies/EUR.php
+ */
+ 
 declare(strict_types=1);
 
 namespace App\Currencies;
