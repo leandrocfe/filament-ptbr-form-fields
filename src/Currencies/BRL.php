@@ -12,6 +12,14 @@ class BRL extends Currency
 
     public string $name = 'Real Brasileiro';
 
+    public float $rate = 1.0;
+
+    public int $mathDecimals = 2;
+
+    public int $displayDecimals = 2;
+
+    public int $rounding = 2;
+
     public string $prefix = '';
 
     public string $locale = 'pt-BR';
