@@ -36,7 +36,9 @@ class Cep extends TextInput
             ->minLength(9)
             ->mask('99999-999')
             ->afterStateUpdated(function ($state, Livewire $livewire, Set $set, Component $component) use ($errorMessage, $setFields, $viaCepRequest) {
-                $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
+                if (!is_null($state)) {
+                    $viaCepRequest($state, $livewire, $set, $component, $errorMessage, $setFields);
+                }
             })
             ->suffixAction(function () use ($mode, $errorMessage, $setFields, $viaCepRequest) {
                 if ($mode === 'suffix') {
