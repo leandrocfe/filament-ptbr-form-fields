@@ -50,7 +50,7 @@ class Money extends TextInput
 
     protected function hydrateCurrency($state): string
     {
-        $sanitized = $this->sanitizeState($state);
+        $sanitized = $this->sanitizeHydrateState($state);
 
         $money = money(amount: $sanitized, currency: $this->getCurrency());
 
@@ -59,7 +59,7 @@ class Money extends TextInput
 
     protected function dehydrateCurrency($state): int|float|string
     {
-        $sanitized = $this->sanitizeState($state);
+        $sanitized = $this->sanitizeDehydrateState($state);
         $money = money(amount: $sanitized, currency: $this->getCurrency());
 
         if ($this->getDehydrateMask()) {
@@ -83,7 +83,27 @@ class Money extends TextInput
         return $this;
     }
 
-    protected function sanitizeState(?string $state): ?int
+    protected function sanitizeHydrateState(?string $state): ?int
+    {
+        if ($state === null) {
+            return null;
+        }
+
+        $state = trim($state);
+
+        $state = Str::of($state)
+            ->replace(',', '.')
+            ->toString();
+
+        $value = (float) $state;
+
+        if (!$this->getIntFormat()) {
+            $value *= 100;
+        }
+        return (int) round($value);
+    }
+
+    protected function sanitizeDehydrateState(?string $state): ?int
     {
         $state = Str::of($state)
             ->replace('.', '')
