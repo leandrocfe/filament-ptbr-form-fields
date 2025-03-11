@@ -90,7 +90,7 @@ class Money extends TextInput
             ->replace(',', '')
             ->toInteger();
 
-        return $state ?? null;
+        return $state;
     }
 
     protected function getOnKeyPress(): array

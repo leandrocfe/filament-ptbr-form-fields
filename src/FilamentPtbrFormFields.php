@@ -2,4 +2,6 @@
 
 namespace Leandrocfe\FilamentPtbrFormFields;
 
-class FilamentPtbrFormFields {}
+class FilamentPtbrFormFields
+{
+}
