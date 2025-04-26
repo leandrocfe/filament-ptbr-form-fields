@@ -50,6 +50,16 @@ class Money extends TextInput
 
     protected function hydrateCurrency($state): string
     {
+        if (! $this->getIntFormat()) {
+            $string = Str::of($state);
+
+            $decimals = $string->contains('.') ? strlen($string->after('.')) : 0;
+
+            if ($decimals < $this->getCurrency()->mathDecimals()) {
+                $state = $state * pow(10, $this->getCurrency()->mathDecimals());
+            }
+        }
+        
         $sanitized = $this->sanitizeState($state);
 
         $money = money(amount: $sanitized, currency: $this->getCurrency());
