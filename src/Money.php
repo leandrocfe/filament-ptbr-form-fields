@@ -100,11 +100,6 @@ class Money extends TextInput
     {
         return [
             'x-on:keypress' => 'function() {
-                var charCode = event.keyCode || event.which;
-                if (charCode < 48 || charCode > 57) {
-                    event.preventDefault();
-                    return false;
-                }
                 return true;
             }',
         ];
