@@ -22,7 +22,7 @@ class PtbrCep extends TextInput
 
             $livewire->validateOnly($component->getKey());
 
-            $request = Http::get("viacep.com.br/ws/$state/json/")->json();
+            $request = Http::get("https://viacep.com.br/ws/$state/json/")->json();
 
             foreach ($setFields as $key => $value) {
                 $set($key, $request[$value] ?? null);
