@@ -91,15 +91,23 @@ class Document extends TextInput
 
     private function resolveDocumentProvider(string|DocumentProviderInterface $provider): DocumentProviderInterface
     {
-        $providerInstance = is_string($provider) ? new $provider : $provider;
+        if (is_string($provider)) {
+            if (! class_exists($provider)) {
+                throw new InvalidArgumentException(
+                    "The provider class [{$provider}] does not exist."
+                );
+            }
 
-        if (! $providerInstance instanceof DocumentProviderInterface) {
+            $provider = new $provider;
+        }
+
+        if (! $provider instanceof DocumentProviderInterface) {
             throw new InvalidArgumentException(
                 'The provider must implement the DocumentProviderInterface interface.'
             );
         }
 
-        return $providerInstance;
+        return $provider;
     }
 
     public function validation(bool|Closure $condition = true): static

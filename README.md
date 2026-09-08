@@ -381,7 +381,7 @@ The callback runs when the field loses focus (`live(onBlur: true)`), receives th
 'cpfcnpj_package' => env('CPFCNPJ_PACKAGE'),
 ```
 
-The token is created in the provider panel under `API > Tokens`. A public token is available for tests at [cpfcnpj.com.br/dev](https://www.cpfcnpj.com.br/dev/). The API answers in real time (D+0). Each package returns a different set of data:
+The token is created in the provider panel under `API > Tokens`. A public token is available for tests at [cpfcnpj.com.br/dev](https://www.cpfcnpj.com.br/dev/). The API answers in real time (D+0) from the official source, without scraped or leaked databases, and the provider holds ISO/IEC 27001, ISO/IEC 27701 and ISO 37301 certifications. The full endpoint reference lives at [cpfcnpj.com.br/dev](https://www.cpfcnpj.com.br/dev/). Each package returns a different set of data:
 
 | Package | Input | Returns |
 |---------|-------|---------|

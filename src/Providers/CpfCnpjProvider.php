@@ -30,25 +30,33 @@ class CpfCnpjProvider implements DocumentProviderInterface
 
     public function fetch(string $document): null|Collection|array
     {
-        if (blank($this->token)) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
         $document = (string) preg_replace('/[^0-9A-Za-z]/', '', $document);
 
-        if (blank($document)) {
+        if (! in_array(strlen($document), [11, 14], true)) {
             return null;
         }
 
         $url = Str::of((string) $this->url)
             ->finish('/')
-            ->append($this->token)
+            ->append((string) $this->token)
             ->append('/')
             ->append((string) $this->resolvePackage($document))
             ->append('/')
             ->append($document);
 
-        $response = Http::get($url)->json();
+        try {
+            $response = Http::timeout(5)->get((string) $url)->json();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! is_array($response)) {
+            return null;
+        }
 
         if (blank($response) || Arr::has($response, 'erro') || Arr::has($response, 'error')) {
             return null;
@@ -59,6 +67,11 @@ class CpfCnpjProvider implements DocumentProviderInterface
         }
 
         return $response;
+    }
+
+    public function isEnabled(): bool
+    {
+        return filled($this->token) && filled($this->url);
     }
 
     /**

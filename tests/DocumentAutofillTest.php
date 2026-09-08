@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Leandrocfe\FilamentPtbrFormFields\Document;
 use Leandrocfe\FilamentPtbrFormFields\Providers\CpfCnpjProvider;
@@ -87,13 +88,51 @@ it('exposes the provider through the document contract', function () {
     expect(new CpfCnpjProvider(token: 'test-token'))->toBeInstanceOf(DocumentProviderInterface::class);
 });
 
+it('does not call the api for input that is neither cpf nor cnpj', function () {
+    Http::fake();
+
+    $provider = new CpfCnpjProvider(token: 'test-token', url: 'https://api.cpfcnpj.com.br/');
+
+    expect($provider->fetch('123'))->toBeNull();
+
+    Http::assertNothingSent();
+});
+
+it('returns null when the http call fails', function () {
+    Http::fake(fn () => throw new ConnectionException('timeout'));
+
+    $provider = new CpfCnpjProvider(token: 'test-token', url: 'https://api.cpfcnpj.com.br/');
+
+    expect($provider->fetch('123.456.789-09'))->toBeNull();
+});
+
+it('reports whether the provider is enabled', function () {
+    expect((new CpfCnpjProvider(token: null))->isEnabled())->toBeFalse()
+        ->and((new CpfCnpjProvider(token: 'test-token', url: 'https://api.cpfcnpj.com.br/'))->isEnabled())->toBeTrue();
+});
+
 it('enables the autofill and stays live on blur', function () {
+    config()->set('filament-ptbr-form-fields.cpfcnpj_token', 'test-token');
+    config()->set('filament-ptbr-form-fields.cpfcnpj_url', 'https://api.cpfcnpj.com.br/');
+
     $field = Document::make('documento')
         ->dynamic()
         ->autofill(CpfCnpjProvider::class, function () {});
 
     expect($field)->toBeInstanceOf(Document::class)
         ->and($field->isLive())->toBeTrue();
+});
+
+it('leaves the field untouched when no token is configured', function () {
+    config()->set('filament-ptbr-form-fields.cpfcnpj_token', null);
+
+    $field = Document::make('documento')
+        ->autofill(CpfCnpjProvider::class, function () {});
+
+    $hooks = (fn () => $this->afterStateUpdated)->call($field);
+
+    expect($field)->toBeInstanceOf(Document::class)
+        ->and($hooks)->toBe([]);
 });
 
 it('lets the autofill error message be customized', function () {

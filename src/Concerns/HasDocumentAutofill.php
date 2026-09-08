@@ -27,15 +27,25 @@ trait HasDocumentAutofill
 
     protected function configureAutofill(DocumentProviderInterface $provider, callable $callback): static
     {
+        if (! $provider->isEnabled()) {
+            return $this;
+        }
+
         return $this
             ->live(onBlur: true)
             ->afterStateUpdated(function (?string $state, Set $set, TextInput $component, Component $livewire) use ($provider, $callback) {
-                $livewire->validateOnly($component->getStatePath());
+                $statePath = $component->getStatePath();
+
+                $livewire->validateOnly($statePath);
+
+                if (blank($state) || $livewire->getErrorBag()->has($statePath)) {
+                    return;
+                }
 
                 $response = $this->fetchDocumentData($state, $provider);
 
                 if (blank($response)) {
-                    $livewire->addError($component->getStatePath(), $this->getAutofillErrorMessage());
+                    $livewire->addError($statePath, $this->getAutofillErrorMessage());
                 }
 
                 $callback($set, $response);
