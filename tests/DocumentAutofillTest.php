@@ -42,6 +42,18 @@ it('fetches CNPJ data and requests package 6', function () {
     Http::assertSent(fn ($request) => $request->url() === 'https://api.cpfcnpj.com.br/test-token/6/11222333000181');
 });
 
+it('uppercases an alphanumeric CNPJ before the lookup', function () {
+    Http::fake([
+        'api.cpfcnpj.com.br/*' => Http::response(['razao' => 'Empresa Exemplo LTDA'], 200),
+    ]);
+
+    $provider = new CpfCnpjProvider(token: 'test-token', url: 'https://api.cpfcnpj.com.br/');
+
+    $provider->fetch('12.abc.345/01de-35');
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://api.cpfcnpj.com.br/test-token/6/12ABC34501DE35');
+});
+
 it('honors an explicit package', function () {
     Http::fake([
         'api.cpfcnpj.com.br/*' => Http::response(['razao' => 'Empresa Exemplo LTDA'], 200),

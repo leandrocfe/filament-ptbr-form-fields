@@ -425,6 +425,11 @@ class MyDocumentProvider implements DocumentProviderInterface
         // Your implementation
         return $response;
     }
+
+    public function isEnabled(): bool
+    {
+        return true;
+    }
 }
 ```
 

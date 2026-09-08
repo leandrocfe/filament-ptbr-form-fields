@@ -34,7 +34,7 @@ class CpfCnpjProvider implements DocumentProviderInterface
             return null;
         }
 
-        $document = (string) preg_replace('/[^0-9A-Za-z]/', '', $document);
+        $document = Str::upper((string) preg_replace('/[^0-9A-Za-z]/', '', $document));
 
         if (! in_array(strlen($document), [11, 14], true)) {
             return null;
