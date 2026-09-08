@@ -5,9 +5,14 @@ namespace Leandrocfe\FilamentPtbrFormFields;
 use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\RawJs;
+use InvalidArgumentException;
+use Leandrocfe\FilamentPtbrFormFields\Concerns\HasDocumentAutofill;
+use Leandrocfe\FilamentPtbrFormFields\Providers\DocumentProviderInterface;
 
 class Document extends TextInput
 {
+    use HasDocumentAutofill;
+
     public bool $validation = true;
 
     protected bool $dehydrateMask = false;
@@ -70,6 +75,31 @@ class Document extends TextInput
         }
 
         return $this;
+    }
+
+    /**
+     * Configure the document provider and callback that fills the form.
+     */
+    public function autofill(string|DocumentProviderInterface $provider, callable $callback): static
+    {
+        $providerInstance = $this->resolveDocumentProvider($provider);
+
+        $this->configureAutofill($providerInstance, $callback);
+
+        return $this;
+    }
+
+    private function resolveDocumentProvider(string|DocumentProviderInterface $provider): DocumentProviderInterface
+    {
+        $providerInstance = is_string($provider) ? new $provider : $provider;
+
+        if (! $providerInstance instanceof DocumentProviderInterface) {
+            throw new InvalidArgumentException(
+                'The provider must implement the DocumentProviderInterface interface.'
+            );
+        }
+
+        return $providerInstance;
     }
 
     public function validation(bool|Closure $condition = true): static

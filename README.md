@@ -339,6 +339,99 @@ Cep::make('postal_code')
     )
 ```
 
+### CPF / CNPJ autofill
+
+The `Document` field can fill other form fields from a document lookup, following the same provider pattern used by the CEP field. The feature is fully optional and additive: without a configured provider the field behaves exactly as before, keeping only its mask and validation.
+
+#### Basic Usage
+
+```php
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Set;
+use Leandrocfe\FilamentPtbrFormFields\Document;
+use Leandrocfe\FilamentPtbrFormFields\Providers\CpfCnpjProvider;
+
+Document::make('document')
+    ->dynamic()
+    ->autofill(CpfCnpjProvider::class, function (Set $set, ?array $response) {
+        $set('name', data_get($response, 'nome') ?? data_get($response, 'razao'));
+        $set('street', data_get($response, 'endereco.logradouro'));
+        $set('district', data_get($response, 'endereco.bairro'));
+        $set('city', data_get($response, 'endereco.cidade'));
+        $set('state', data_get($response, 'endereco.uf'));
+    }),
+
+TextInput::make('name'),
+TextInput::make('street'),
+TextInput::make('district'),
+TextInput::make('city'),
+TextInput::make('state'),
+```
+
+The callback runs when the field loses focus (`live(onBlur: true)`), receives the raw provider response, and decides which form fields are filled. The mapping above is only a reference; you are free to map any field you need.
+
+#### CpfCnpjProvider
+
+`CpfCnpjProvider` is a reference provider for the [cpfcnpj.com.br](https://www.cpfcnpj.com.br/) API. It reads the token, package and base URL from the configuration or the environment:
+
+```php
+// config/filament-ptbr-form-fields.php
+'cpfcnpj_url' => env('CPFCNPJ_URL', 'https://api.cpfcnpj.com.br/'),
+'cpfcnpj_token' => env('CPFCNPJ_TOKEN'),
+'cpfcnpj_package' => env('CPFCNPJ_PACKAGE'),
+```
+
+The token is created in the provider panel under `API > Tokens`. A public token is available for tests at [cpfcnpj.com.br/dev](https://www.cpfcnpj.com.br/dev/). The API answers in real time (D+0). Each package returns a different set of data:
+
+| Package | Input | Returns |
+|---------|-------|---------|
+| 3 | CPF | name and address |
+| 5 | CNPJ | company name, trade name and address |
+| 6 | CNPJ | package 5 data plus registration status, size and Simples Nacional option |
+
+When `cpfcnpj_package` is not set, the package is inferred from the document length (CPF uses package 3, CNPJ uses package 6). You can also force a package when creating the provider:
+
+```php
+Document::make('document')
+    ->cnpj()
+    ->autofill(new CpfCnpjProvider(package: 6), function (Set $set, ?array $response) {
+        // ...
+    })
+```
+
+#### Custom Error Message
+
+```php
+Document::make('document')
+    ->dynamic()
+    ->autofillErrorMessage('Document not found')
+    ->autofill(CpfCnpjProvider::class, function (Set $set, ?array $response) {
+        // ...
+    })
+```
+
+#### Custom Provider
+
+You can plug any other data source by implementing `DocumentProviderInterface`:
+
+```php
+use Illuminate\Support\Collection;
+use Leandrocfe\FilamentPtbrFormFields\Providers\DocumentProviderInterface;
+
+class MyDocumentProvider implements DocumentProviderInterface
+{
+    public function fetch(string $document): null|Collection|array
+    {
+        // Your implementation
+        return $response;
+    }
+}
+```
+
+#### Data privacy (LGPD)
+
+Filling name and address from a CPF or CNPJ deals with personal data. Unlike a public ZIP code, this lookup is opt-in, depends on your own provider token and on the legal basis you hold to process that data. Enable it only where the processing is justified.
+
 ## Testing
 
 ```bash
