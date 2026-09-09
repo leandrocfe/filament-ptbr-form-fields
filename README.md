@@ -40,7 +40,7 @@ Document::make('cpf')
 ```
 
 ```php
-//CNPJ
+//CNPJ (accepts the new alphanumeric CNPJ format)
 Document::make('cnpj')
     ->cnpj()
 ```
@@ -240,7 +240,7 @@ The CEP field provides automatic address lookup through configurable providers l
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Set;
 use Leandrocfe\FilamentPtbrFormFields\Cep;
-use Leandrocfe\FilamentPtbrFormFields\CepFieldMode;
+use Leandrocfe\FilamentPtbrFormFields\Enums\CepFieldMode;
 use Leandrocfe\FilamentPtbrFormFields\Providers\ViaCepProvider;
 
 Cep::make('postal_code')
@@ -257,6 +257,33 @@ TextInput::make('neighborhood'),
 TextInput::make('city'),
 TextInput::make('state'),
 ```
+
+#### Configuration
+
+You can publish the configuration file to customize the default API endpoints:
+
+```bash
+php artisan vendor:publish --tag=filament-ptbr-form-fields-config
+```
+
+This will publish `config/filament-ptbr-form-fields.php`:
+
+```php
+return [
+    'viacep_url' => env('VIACEP_URL', 'https://viacep.com.br/ws/'),
+    'brasilapi_url' => env('BRASILAPI_URL', 'https://brasilapi.com.br/api/cep/v1/'),
+];
+```
+
+You can also override the endpoints via environment variables in your `.env` file:
+
+```dotenv
+VIACEP_URL=https://viacep.com.br/ws/
+BRASILAPI_URL=https://brasilapi.com.br/api/cep/v1/
+```
+
+> **Note:** The protocol (`https://`), host, and trailing slash (`/`) are required when specifying custom URLs.
+> If your application uses configuration caching, make sure to run `php artisan config:clear` (or `php artisan config:cache`) after modifying environment variables or the configuration file.
 
 #### Lookup Modes
 
@@ -319,6 +346,27 @@ class MyCustomProvider implements CepProviderInterface
     }
 }
 ```
+
+#### Troubleshooting
+
+##### `URI must include a scheme and host`
+
+If you encounter the following exception when searching for a CEP:
+
+```text
+Illuminate\Http\Client\ConnectionException
+URI must include a scheme and host. Use an absolute URI, a network-path reference starting with //, or configure a base_uri.
+```
+
+This occurs when the provider endpoint URL is missing the scheme (e.g., `viacep.com.br/ws/` instead of `https://viacep.com.br/ws/`).
+
+To resolve this:
+1. Ensure your `VIACEP_URL` or `BRASILAPI_URL` environment variables in `.env` include the full protocol: `https://viacep.com.br/ws/` or `https://brasilapi.com.br/api/cep/v1/`.
+2. If you have published `config/filament-ptbr-form-fields.php`, verify that the default URLs include `https://`.
+3. Clear the configuration cache by running:
+   ```bash
+   php artisan config:clear
+   ```
 
 #### Legacy Method (Deprecated)
 

@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 use Leandrocfe\FilamentPtbrFormFields\Enums\CepFieldMode;
 use Leandrocfe\FilamentPtbrFormFields\Providers\CepProviderInterface;
 use Livewire\Component;
@@ -72,7 +73,7 @@ trait HasCepModes
             });
     }
 
-    protected function fetchCepData(?string $cep, CepProviderInterface $provider): null|array|\Illuminate\Support\Collection
+    protected function fetchCepData(?string $cep, CepProviderInterface $provider): null|array|Collection
     {
         if (blank($cep)) {
             return null;
