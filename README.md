@@ -40,7 +40,7 @@ Document::make('cpf')
 ```
 
 ```php
-//CNPJ
+//CNPJ (accepts the new alphanumeric CNPJ format)
 Document::make('cnpj')
     ->cnpj()
 ```
