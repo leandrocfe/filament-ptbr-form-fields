@@ -18,7 +18,7 @@ class Document extends TextInput
 
         if ($condition) {
             $this->mask(RawJs::make(<<<'JS'
-                $input.length > 14 ? '99.999.999/9999-99' : '999.999.999-99'
+                /[A-Za-z]/.test($input) || $input.replace(/[^A-Za-z0-9]/g, '').length > 11 ? '**.***.***/****-99' : '999.999.999-99'
             JS))->minLength(14);
         }
 
@@ -37,7 +37,7 @@ class Document extends TextInput
         return $this;
     }
 
-    public function cnpj(string|Closure $format = '99.999.999/9999-99'): static
+    public function cnpj(string|Closure $format = '**.***.***/****-99'): static
     {
         $this->dynamic(false)
             ->mask($format);

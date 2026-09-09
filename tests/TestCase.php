@@ -2,8 +2,12 @@
 
 namespace Leandrocfe\FilamentPtbrFormFields\Tests;
 
+use Filament\Forms\FormsServiceProvider;
+use Filament\Support\SupportServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use LaravelLegends\PtBrValidator\ValidatorProvider;
 use Leandrocfe\FilamentPtbrFormFields\FilamentPtbrFormFieldsServiceProvider;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -20,9 +24,10 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            \Livewire\LivewireServiceProvider::class,
-            \Filament\Support\SupportServiceProvider::class,
-            \Filament\Forms\FormsServiceProvider::class,
+            LivewireServiceProvider::class,
+            SupportServiceProvider::class,
+            FormsServiceProvider::class,
+            ValidatorProvider::class,
             FilamentPtbrFormFieldsServiceProvider::class,
         ];
     }
