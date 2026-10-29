@@ -30,11 +30,11 @@ class PtbrMoney extends TextInput
                     }',
 
                 'x-on:keyup' => 'function() {
-                        var money = $el.value.replace(/\D/g, "");
-                        money = (money / 100).toFixed(2) + "";
-                        money = money.replace(".", ",");
-                        money = money.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
-                        money = money.replace(/(\d)(\d{3}),/g, "$1.$2,");
+                        var money = $el.value.replace(/\D/g, \'\');
+                        money = (money / 100).toFixed(2) + \'\';
+                        money = money.replace(\'.\', \',\');
+                        money = money.replace(/(\d)(\d{3})(\d{3}),/g, \'$1.$2.$3,\');
+                        money = money.replace(/(\d)(\d{3}),/g, \'$1.$2,\');
                         
                         $el.value = money;
                     }',

@@ -2,9 +2,11 @@
 
 namespace Leandrocfe\FilamentPtbrFormFields\Tests;
 
+use ArchTech\Money\MoneyServiceProvider;
 use Filament\Forms\FormsServiceProvider;
 use Filament\Support\SupportServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use LaravelLegends\PtBrValidator\ValidatorProvider;
 use Leandrocfe\FilamentPtbrFormFields\FilamentPtbrFormFieldsServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -26,6 +28,8 @@ class TestCase extends Orchestra
             LivewireServiceProvider::class,
             SupportServiceProvider::class,
             FormsServiceProvider::class,
+            MoneyServiceProvider::class,
+            ValidatorProvider::class,
             FilamentPtbrFormFieldsServiceProvider::class,
         ];
     }

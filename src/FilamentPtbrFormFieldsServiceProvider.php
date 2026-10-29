@@ -2,32 +2,25 @@
 
 namespace Leandrocfe\FilamentPtbrFormFields;
 
-use Filament\FilamentServiceProvider;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class FilamentPtbrFormFieldsServiceProvider extends FilamentServiceProvider
+class FilamentPtbrFormFieldsServiceProvider extends PackageServiceProvider
 {
-    public function packageBooted(): void
-    {
-        parent::packageBooted();
-
-        FilamentAsset::register([
-            Js::make('money-script', __DIR__.'/../resources/js/money.js'),
-        ]);
-    }
-
     public function configurePackage(Package $package): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
         $package
             ->name('filament-ptbr-form-fields')
             ->hasConfigFile()
             ->hasViews();
+    }
+
+    public function packageBooted(): void
+    {
+        FilamentAsset::register([
+            Js::make('money', __DIR__.'/../resources/js/money.js'),
+        ], 'leandrocfe/filament-ptbr-form-fields');
     }
 }
