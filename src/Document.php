@@ -8,6 +8,12 @@ use Filament\Support\RawJs;
 
 class Document extends TextInput
 {
+    public const CPF_MASK = '999.999.999-99';
+
+    public const CNPJ_MASK = '99.999.999/9999-99';
+
+    public const CNPJ_ALPHANUMERIC_MASK = '**.***.***/****-99';
+
     public bool $validation = true;
 
     protected bool $dehydrateMask = false;
@@ -16,13 +22,53 @@ class Document extends TextInput
     {
         parent::setUp();
 
-        $this->dehydrateStateUsing(function (?string $state) {
-            if (! $this->dehydrateMask || $state === null) {
-                return $state;
-            }
+        $this->formatStateUsing(fn (mixed $state): mixed => $this->toUpperCase($state));
+    }
 
-            return preg_replace('/[^A-Za-z0-9]/', '', $state);
-        });
+    /**
+     * The alphanumeric CNPJ (IN RFB nº 2.119/2022) only assigns values to
+     * uppercase letters, so every state leaving this field is normalized.
+     */
+    protected function toUpperCase(mixed $state): mixed
+    {
+        return is_string($state) ? strtoupper($state) : $state;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getExtraInputAttributes(): array
+    {
+        return [
+            'style' => 'text-transform: uppercase',
+            ...parent::getExtraInputAttributes(),
+        ];
+    }
+
+    public function mutateStateForValidation(mixed $state): mixed
+    {
+        return $this->toUpperCase(parent::mutateStateForValidation($state));
+    }
+
+    public function mutatesStateForValidation(): bool
+    {
+        return true;
+    }
+
+    public function mutateDehydratedState(mixed $state): mixed
+    {
+        $state = $this->toUpperCase(parent::mutateDehydratedState($state));
+
+        if (! $this->dehydrateMask || ! is_string($state)) {
+            return $state;
+        }
+
+        return preg_replace('/[^A-Z0-9]/', '', $state);
+    }
+
+    public function mutatesDehydratedState(): bool
+    {
+        return true;
     }
 
     public function dehydrateMask(bool $condition = true): static
@@ -32,23 +78,27 @@ class Document extends TextInput
         return $this;
     }
 
-    public function dynamic(bool $condition = true): static
+    public function dynamic(bool $condition = true, bool $alphanumeric = true): static
     {
         if (self::getValidation()) {
             $this->rule('cpf_ou_cnpj');
         }
 
         if ($condition) {
-            $this->mask(RawJs::make(<<<'JS'
-                /[A-Za-z]/.test($input) || $input.replace(/[^A-Za-z0-9]/g, '').length > 11 ? '**.***.***/****-99' : '999.999.999-99'
-            JS
-            ))->minLength(14);
+            $cnpjMask = $alphanumeric ? self::CNPJ_ALPHANUMERIC_MASK : self::CNPJ_MASK;
+            $cpfMask = self::CPF_MASK;
+
+            $js = $alphanumeric
+                ? "/[A-Za-z]/.test(\$input) || \$input.replace(/[^A-Za-z0-9]/g, '').length > 11 ? '{$cnpjMask}' : '{$cpfMask}'"
+                : "\$input.replace(/\\D/g, '').length > 11 ? '{$cnpjMask}' : '{$cpfMask}'";
+
+            $this->mask(RawJs::make($js))->minLength(14);
         }
 
         return $this;
     }
 
-    public function cpf(string|Closure $format = '999.999.999-99'): static
+    public function cpf(string|Closure $format = self::CPF_MASK): static
     {
         $this->dynamic(false)
             ->mask($format);
@@ -60,8 +110,15 @@ class Document extends TextInput
         return $this;
     }
 
-    public function cnpj(string|Closure $format = '**.***.***/****-99'): static
+    public function cnpj(string|Closure|bool|null $format = null, bool $alphanumeric = true): static
     {
+        if (is_bool($format)) {
+            $alphanumeric = $format;
+            $format = null;
+        }
+
+        $format ??= $alphanumeric ? self::CNPJ_ALPHANUMERIC_MASK : self::CNPJ_MASK;
+
         $this->dynamic(false)
             ->mask($format);
 
