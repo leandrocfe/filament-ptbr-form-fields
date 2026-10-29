@@ -8,10 +8,15 @@ This package uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLeg
 
 ## Installation
 
+Version 5.1 targets PHP 8.2+, Filament 5, and `laravellegends/pt-br-validator` `^12.2 || ^13.0`.
+The validator minimum is now 12.2 for alphanumeric CNPJ support; applications pinned to 10.x, 11.x,
+or 12.0–12.1 must upgrade that dependency before upgrading this package.
+
 You can install the package via Composer:
 
 ```bash
 composer require leandrocfe/filament-ptbr-form-fields:"^5.0"
+php artisan filament:assets
 ```
 
 ### Filament V2 - if you are using Filament v2.x, you can use [this section](https://github.com/leandrocfe/filament-ptbr-form-fields/tree/2.0.0)
@@ -40,12 +45,49 @@ Document::make('cpf')
 ```
 
 ```php
-//CNPJ (accepts the new alphanumeric CNPJ format)
+// CNPJ (accepts the new alphanumeric format by default: **.***.***/****-99, also compatible with numeric CNPJs)
 Document::make('cnpj')
     ->cnpj()
+
+// Or strictly enforce the classic numeric CNPJ format: 99.999.999/9999-99
+Document::make('cnpj')
+    ->cnpj(alphanumeric: false)
 ```
 
-If you want to use a custom mask for the input, use the cpf() or cnpj() method with a string argument representing the desired mask:
+For dynamic CPF/CNPJ inputs:
+
+```php
+// Dynamic CPF or CNPJ (supports alphanumeric CNPJ by default)
+Document::make('cpf_or_cnpj')
+    ->dynamic()
+
+// Dynamic CPF or CNPJ using only the classic numeric masks
+Document::make('cpf_or_cnpj')
+    ->dynamic(alphanumeric: false)
+```
+
+> `alphanumeric: false` only restricts the **mask**. The `cpf_ou_cnpj` validation rule still accepts an
+> alphanumeric CNPJ that reaches the field from another source (an imported record, a request payload, etc.).
+
+`cnpj()` also accepts the flag positionally, which is handy when you do not need a custom mask:
+
+```php
+Document::make('cnpj')
+    ->cnpj(false) // same as ->cnpj(alphanumeric: false)
+```
+
+You can also use mask constants directly:
+
+```php
+Document::CPF_MASK;               // '999.999.999-99'
+Document::CNPJ_MASK;              // '99.999.999/9999-99'
+Document::CNPJ_ALPHANUMERIC_MASK; // '**.***.***/****-99'
+
+Document::make('cnpj')
+    ->cnpj(Document::CNPJ_MASK)
+```
+
+If you want to use a custom mask for the input, use the `cpf()` or `cnpj()` method with a string argument representing the desired mask:
 
 ```php
 Document::make('cpf')
@@ -56,6 +98,19 @@ Document::make('cpf')
 Document::make('cnpj')
     ->cnpj('99999999/9999-99')
 ```
+
+### Uppercase normalization
+
+The alphanumeric CNPJ (Anexo XV of IN RFB nº 2.119/2022) only assigns values to **uppercase** letters, so
+`Document` normalizes the field:
+
+- the input is displayed in uppercase (`text-transform: uppercase`);
+- the state is uppercased before validation and before being dehydrated (saved).
+
+> **Behavior change:** the dehydrated state is now always uppercased, even when `dehydrateMask()` is not used.
+> A value typed as `12.abc.345/01de-35` is saved as `12.ABC.345/01DE-35` (or `12ABC34501DE35` with
+> `dehydrateMask()`). While the user is still typing, the live Livewire state keeps the original casing, so
+> a custom `afterStateUpdated()` callback may receive lowercase characters.
 
 ### Validation
 `Document` uses [LaravelLegends/pt-br-validator](https://github.com/LaravelLegends/pt-br-validator) to validate Brazilian Portuguese fields by default - `cpf_ou_cnpj` | `cpf` | `cnpj`
@@ -107,7 +162,60 @@ Money::make('price')
 #output: 100.00
 ```
 
-This is suitable for use with `decimal` or `float` data types.
+The field uses a calculator-style mask: type only digits and the thousands/decimal separators are applied for you. Typing `100020` displays `1.000,20`. You do not type `.` or `,`.
+
+When editing an amount in the middle, the caret and selected digit range stay at the same logical digits as the mask adds or removes separators. If Backspace or Delete lands directly on a separator, the adjacent digit is removed while preserving the caret by digit position. Pressing `-` toggles the sign while retaining the caret or selection. Both operations dispatch a bubbling `input` event, so `wire:model` receives the updated value. Readonly and disabled inputs are preserved.
+
+#### Input compatibility and optional decimal parsing
+
+By default, 5.1 preserves the 5.0.1 input contract: remove `.` and `,`, then read the remaining
+integer as cents. For example, `1.230` displays `12,30`, `1.000` displays `10,00`, `10,5` displays
+`1,05`, and an integer `1000` displays `10,00`. Empty or null input displays `0,00` and saves zero.
+`intFormat()` chooses integer-cent output; it does not change this default input contract.
+
+For persisted decimal units (including database floats), explicitly opt in:
+
+```php
+Money::make('price')
+    ->decimalInput()
+    ->emptyAsNull() // optional: blank input displays blank and saves null
+```
+
+In `decimalInput()` mode, numeric `1000` and `1000.2` represent units, canonical strings `1000.20`
+and `1000.2000` represent 1000.2 units, and digit-only strings remain calculator-style cents.
+With `intFormat()`, integer numbers and integer strings represent cents. Localized values such as
+`1.234,50` are supported. Extra fractional digits must be zero: `1000.2001` is rejected at scale 2.
+Ambiguous BRL strings such as `1.230` are rejected in this opt-in mode; use `1.23` for 1.23 units or
+`1.230,00` for 1230 units. The explicit `.000` convention (`1.000`) and multiple groups
+(`1.234.567`) represent thousands. This convention applies to currencies with `.` as their
+thousands separator and a different decimal separator.
+
+Invalid, ambiguous, or overflowing input throws `InvalidArgumentException` during hydration or
+dehydration, instead of clearing or saving an altered value. Validate/normalize imported amounts
+before filling a form. Both opt-ins accept a boolean or closure and can be disabled with `false`.
+`nullable()` alone does not enable `emptyAsNull()`; blank-to-null behavior is independent of validation.
+
+Integer cents and their formatted masks remain exact throughout the PHP integer range, including
+values above JavaScript's safe integer limit. The browser mask uses `BigInt`. The legacy `Currency.masking()` helper separately retains numeric-unit
+versus string-cent input semantics, `locales`, and the `options` object for `Intl.NumberFormat`
+(including `minimumFractionDigits` / `maximumFractionDigits`). Current fields use the new mask directly.
+Ordinary decimal
+output keeps the legacy float type; amounts whose cents exceed `2^52` return an exact decimal
+**string** instead. Use `intFormat()` with PHP integers or integer strings, or `dehydrateMask()`, when
+exact large amounts are required. Do not pass large amounts as floats: their precision is already
+lost before the field receives them; unsafe or non-finite floats are rejected.
+
+#### Upgrading subclasses and published assets
+
+Run `php artisan filament:assets` after upgrading. The asset is now `money` under
+`leandrocfe/filament-ptbr-form-fields`; the previous `public/js/money-script.js` can be removed.
+If no published asset exists, the field uses an inline copy of the same mask.
+
+The protected `sanitizeState(?string $state): ?int`, `getOnKeyPress(): array`, `getOnKeyUp(): array`,
+and `getOnBlur(): array` extension points remain available and are invoked. `sanitizeState()` applies
+to default parsing; opting in to `decimalInput()` selects the new parser instead. The keyboard hooks
+now return `keydown` and `input.capture` attributes by default; subclasses overriding them may keep
+their attributes or migrate to those events to support paste, sign changes, and caret preservation.
 
 #### Using Integer Values
 
@@ -123,7 +231,7 @@ Money::make('price')
 ```
 #### Getting the Raw State
 
-To retrieve the raw state of the field, you can use the `dehydratedMask() method:
+To retrieve the formatted state of the field, you can use the `dehydrateMask()` method:
 
 ```php
 use Leandrocfe\FilamentPtbrFormFields\Money;
